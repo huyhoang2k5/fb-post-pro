@@ -6,9 +6,6 @@ export const META_GRAPH_URL = `https://graph.facebook.com/${META_GRAPH_VERSION}`
 export const REQUIRED_FB_SCOPES = [
   "public_profile",
   "email",
-  "pages_show_list",
-  "pages_read_engagement",
-  "pages_manage_posts",
 ];
 
 export interface MetaOAuthTokenResponse {
