@@ -77,12 +77,19 @@ export interface PublishResult {
   rawResponse?: any;
 }
 
+function getRedirectUri(): string {
+  if (process.env.FACEBOOK_REDIRECT_URI) return process.env.FACEBOOK_REDIRECT_URI;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/facebook/callback`;
+  if (process.env.NEXTAUTH_URL) return `${process.env.NEXTAUTH_URL}/api/facebook/callback`;
+  return "http://localhost:3000/api/facebook/callback";
+}
+
 /**
  * Tạo URL ủy quyền Meta OAuth
  */
 export function getMetaAuthUrl(state: string = ""): string {
   const appId = process.env.FACEBOOK_APP_ID;
-  const redirectUri = process.env.FACEBOOK_REDIRECT_URI || "http://localhost:3000/api/facebook/callback";
+  const redirectUri = getRedirectUri();
   const scopes = REQUIRED_FB_SCOPES.join(",");
 
   if (!appId) {
@@ -105,7 +112,7 @@ export function getMetaAuthUrl(state: string = ""): string {
 export async function exchangeCodeForToken(code: string): Promise<MetaOAuthTokenResponse> {
   const appId = process.env.FACEBOOK_APP_ID;
   const appSecret = process.env.FACEBOOK_APP_SECRET;
-  const redirectUri = process.env.FACEBOOK_REDIRECT_URI || "http://localhost:3000/api/facebook/callback";
+  const redirectUri = getRedirectUri();
 
   if (!appId || !appSecret) {
     throw new Error("Chưa cấu hình FACEBOOK_APP_ID hoặc FACEBOOK_APP_SECRET.");
