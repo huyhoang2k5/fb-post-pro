@@ -77,19 +77,28 @@ export interface PublishResult {
   rawResponse?: any;
 }
 
-function getRedirectUri(): string {
+export function getRedirectUri(reqOrigin?: string): string {
   if (process.env.FACEBOOK_REDIRECT_URI) return process.env.FACEBOOK_REDIRECT_URI;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/facebook/callback`;
+  if (reqOrigin && !reqOrigin.includes("localhost")) {
+    return `${reqOrigin}/api/facebook/callback`;
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/facebook/callback`;
+  }
   if (process.env.NEXTAUTH_URL) return `${process.env.NEXTAUTH_URL}/api/facebook/callback`;
+  // Fallback to exact production domain if on Vercel
+  if (process.env.VERCEL_URL) {
+    return "https://fb-post-pro.vercel.app/api/facebook/callback";
+  }
   return "http://localhost:3000/api/facebook/callback";
 }
 
 /**
  * Tạo URL ủy quyền Meta OAuth
  */
-export function getMetaAuthUrl(state: string = ""): string {
+export function getMetaAuthUrl(state: string = "", reqOrigin?: string): string {
   const appId = process.env.FACEBOOK_APP_ID;
-  const redirectUri = getRedirectUri();
+  const redirectUri = getRedirectUri(reqOrigin);
   const scopes = REQUIRED_FB_SCOPES.join(",");
 
   if (!appId) {
@@ -109,10 +118,10 @@ export function getMetaAuthUrl(state: string = ""): string {
 /**
  * Đổi authorization code lấy Short-lived User Token
  */
-export async function exchangeCodeForToken(code: string): Promise<MetaOAuthTokenResponse> {
+export async function exchangeCodeForToken(code: string, reqOrigin?: string): Promise<MetaOAuthTokenResponse> {
   const appId = process.env.FACEBOOK_APP_ID;
   const appSecret = process.env.FACEBOOK_APP_SECRET;
-  const redirectUri = getRedirectUri();
+  const redirectUri = getRedirectUri(reqOrigin);
 
   if (!appId || !appSecret) {
     throw new Error("Chưa cấu hình FACEBOOK_APP_ID hoặc FACEBOOK_APP_SECRET.");

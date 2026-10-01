@@ -5,9 +5,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const redirect = searchParams.get("redirect") === "true";
-    const state = Math.random().toString(36).substring(7);
-
-    const authUrl = getMetaAuthUrl(state);
+    const origin = req.nextUrl.origin;
+    const authUrl = getMetaAuthUrl(state, origin);
 
     if (redirect) {
       return NextResponse.redirect(authUrl);

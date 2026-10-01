@@ -16,7 +16,8 @@ export async function GET(req: Request) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const origin = new URL(req.url).origin;
+  const baseUrl = process.env.NEXTAUTH_URL || (origin.includes("localhost") ? "http://localhost:3000" : origin);
 
   if (error || !code) {
     const errorMsg = errorDescription || error || "Người dùng từ chối cấp quyền Facebook";
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
 
   try {
     // 1. Đổi code lấy short-lived access token
-    const shortTokenRes = await exchangeCodeForToken(code);
+    const shortTokenRes = await exchangeCodeForToken(code, origin);
 
     // 2. Nâng cấp lên Long-Lived User Access Token (hạn 60 ngày)
     const longTokenRes = await getLongLivedUserToken(shortTokenRes.access_token);
