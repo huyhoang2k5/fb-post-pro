@@ -9,8 +9,6 @@ export const REQUIRED_FB_SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
   "pages_manage_posts",
-  "pages_manage_metadata",
-  "groups_access_member_info",
 ];
 
 export interface MetaOAuthTokenResponse {
@@ -98,8 +96,10 @@ export function getRedirectUri(reqOrigin?: string): string {
  */
 export function getMetaAuthUrl(state: string = "", reqOrigin?: string): string {
   const appId = process.env.FACEBOOK_APP_ID;
-  const redirectUri = getRedirectUri(reqOrigin);
-  const scopes = REQUIRED_FB_SCOPES.join(",");
+  const scopeList = process.env.FACEBOOK_SCOPES
+    ? process.env.FACEBOOK_SCOPES.split(",").map((s) => s.trim())
+    : REQUIRED_FB_SCOPES;
+  const scopes = scopeList.join(",");
 
   if (!appId) {
     throw new Error("Chưa cấu hình FACEBOOK_APP_ID trong biến môi trường.");
